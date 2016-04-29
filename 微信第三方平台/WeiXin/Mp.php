@@ -146,11 +146,13 @@ class Mp extends Wechat
         if ($_SERVER['REQUEST_METHOD'] == "POST") {
             $postStr = file_get_contents("php://input");
             $array = (array) simplexml_load_string($postStr, 'SimpleXMLElement', LIBXML_NOCDATA);
+//			var_dump($postStr);
             $this->encrypt_type = isset($_GET["encrypt_type"]) ? $_GET["encrypt_type"] : '';
             if ($this->encrypt_type == 'aes') {
                 //aes加密
                 $this->log($postStr);
                 $encryptStr = $array['Encrypt'];
+//				var_dump($encryptStr);
                 $pc = new Prpcrypt($this->encodingAesKey);
                 $array = $pc->decrypt($encryptStr, $this->component_appid);
                 if (!isset($array[0]) || ($array[0] != 0)) {
@@ -364,6 +366,7 @@ class Mp extends Wechat
         $sContent = curl_exec($oCurl);
         $aStatus = curl_getinfo($oCurl);
         curl_close($oCurl);
+//		var_dump($sContent);
         if (intval($aStatus["http_code"]) == 200) {
             return $sContent;
         } else {
@@ -486,6 +489,7 @@ class Mp extends Wechat
 			$this->authorizer_appid = $json['authorization_info']['authorizer_appid'];
 			$this->authorizer_access_token = $json['authorization_info']['authorizer_access_token'];
 			$this->authorizer_refresh_token = $json['authorization_info']['authorizer_refresh_token'];
+            $this->expires_in = time() + 7000;
 
 			$func_info_arr = $json['authorization_info']['func_info'];
 			$func_info = '';
@@ -498,14 +502,22 @@ class Mp extends Wechat
 			$this->func_info = $func_info;
 
 			//authorizer_access_token
-			$dataaccess = json_decode(file_get_contents("wxoauthml/authorizer_access_token.json"));
-			$dataaccess->expires_in = time() + 7000;
-			$dataaccess->authorizer_access_token = $this->authorizer_access_token;
-			$fp = fopen("wxoauthml/authorizer_access_token.json", "w");
-			fwrite($fp, json_encode($dataaccess));
-			fclose($fp);
+			// $dataaccess = json_decode(file_get_contents("wxoauthml/authorizer_access_token.json"));
+			// $dataaccess->expires_in = time() + 7000;
+			// $dataaccess->authorizer_access_token = $this->authorizer_access_token;
+			// $fp = fopen("wxoauthml/authorizer_access_token.json", "w");
+			// fwrite($fp, json_encode($dataaccess));
+			// fclose($fp);
+
+			//authorizer_refresh_token
+//			$datarefresh = json_decode(file_get_contents("wxoauthml/authorizer_refresh_token.json"));
+//			$datarefresh->authorizer_refresh_token = $this->authorizer_refresh_token;
+//			$fprefresh = fopen("wxoauthml/authorizer_refresh_token.json", "w");
+//			fwrite($fprefresh, json_encode($datarefresh));
+//			fclose($fp);
 
             // $this->setCache($authname, $this->access_token, $expire);
+			
             return $json['authorization_info'];
         }
         return false;
